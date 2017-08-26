@@ -84,6 +84,14 @@ public class SyncActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                getString(R.string.preference_file_name),
+                MODE_PRIVATE
+        );
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(getString(R.string.last_sync_key_name), new Date().toString());
+        editor.commit();
+
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -464,12 +472,20 @@ public class SyncActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(List<String> output) {
             mProgress.hide();
-            if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
-            } else {
-                output.add(0, "Data retrieved using the Google Sheets API:");
-                mOutputText.setText(TextUtils.join("\n", output));
+            if (isSync && output != null) {
+                mOutputText.setText("Data is synced. Check Attendance sheet.");
             }
+            else {
+                if (output == null || output.size() == 0) {
+                    mOutputText.setText("No results returned.");
+                }
+                else {
+                    output.add(0, "Data retrieved using the Google Sheets API:");
+                    mOutputText.setText(TextUtils.join("\n", output));
+                }
+            }
+
+
         }
 
         @Override
