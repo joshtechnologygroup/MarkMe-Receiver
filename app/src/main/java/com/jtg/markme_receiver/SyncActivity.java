@@ -70,8 +70,8 @@ public class SyncActivity extends AppCompatActivity
 
     private boolean isSync = false;
 
-    private static final String BUTTON_TEXT = "Call Google Sheets API";
-    private static final String SYNC_BUTTON_TEXT = "Sync/Create Sheet";
+    private static final String BUTTON_TEXT = "Get Employees Data";
+    private static final String SYNC_BUTTON_TEXT = "Upload Employees Attendance";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
@@ -459,7 +459,6 @@ public class SyncActivity extends AppCompatActivity
                     .setValueInputOption("RAW")
                     .setData(data2);
             BatchUpdateValuesResponse result = this.mService.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
-            System.out.println(result);
             return results;
         }
 
@@ -571,9 +570,11 @@ public class SyncActivity extends AppCompatActivity
                                 row.get(0).toString(), row.get(1).toString(), row.get(2).toString(), row.get(3).toString()
                         );
                     }
+                    if (row.size() != 4) {
+                        break;
+                    }
                 }
             }
-            System.out.println(response);
             return results;
         }
 
