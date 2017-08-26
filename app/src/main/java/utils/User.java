@@ -88,6 +88,7 @@ public final class User {
         res.moveToFirst();
 
         if(!res.isAfterLast()){
+            userData.add(res.getString(res.getColumnIndex(UserEntry._ID)));
             userData.add(res.getString(res.getColumnIndex(UserEntry.COLUMN_NAME_EMPLOYEE_ID)));
             userData.add(res.getString(res.getColumnIndex(UserEntry.COLUMN_NAME_NAME)));
             userData.add(res.getString(res.getColumnIndex(UserEntry.COLUMN_NAME_CAR_NUM)));
@@ -99,7 +100,7 @@ public final class User {
     public static ArrayList<ArrayList<String>> getAllUsers(SQLiteDatabase db) {
         ArrayList<ArrayList<String>> row_list = new ArrayList<>();
 
-        Cursor res =  db.rawQuery( "select * from "+UserEntry.TABLE_NAME, null );
+        Cursor res =  db.rawQuery( "select * from "+UserEntry.TABLE_NAME, null);
         res.moveToFirst();
 
         while(!res.isAfterLast()){

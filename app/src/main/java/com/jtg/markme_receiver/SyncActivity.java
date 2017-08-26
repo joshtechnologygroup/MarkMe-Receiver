@@ -151,8 +151,6 @@ public class SyncActivity extends AppCompatActivity
                 .setBackOff(new ExponentialBackOff());
     }
 
-
-
     /**
      * Attempt to call the API, after verifying that all the preconditions are
      * satisfied. The preconditions are: Google Play Services installed, an
