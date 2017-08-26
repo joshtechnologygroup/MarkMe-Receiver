@@ -414,17 +414,11 @@ public class SyncActivity extends AppCompatActivity
         }
 
         private List<List<Object>> getSheetData() {
-
-            List<List<String>> actualData;
-
-            actualData = Arrays.asList(
-                    Arrays.asList("NAME", "IN_TIME", "OUT_TIME"),
-                    Arrays.asList("Prakash", "09:50", "20:30"),
-                    Arrays.asList("Ishu", "09:30", "20:30"),
-                    Arrays.asList("Saurabh", "10:30", "20:30"),
-                    Arrays.asList("Rajat", "11:00", "20:30"),
-                    Arrays.asList("Tarun", "09:00", "20:30")
+            ArrayList<ArrayList<String>> actualData = UserAttendance.getAllUserAttendnces(markMeDB.getReadableDatabase());
+            ArrayList<String> headers = new ArrayList<String>(
+                    Arrays.asList("Name", "In Time", "Out Time")
             );
+            actualData.add(0, headers);
 
             List<List<Object>> data = new ArrayList<List<Object>>();
 
@@ -448,6 +442,7 @@ public class SyncActivity extends AppCompatActivity
 
             String spreadsheetId = ATTENDANCE_SHEET_ID;
             List<List<Object>> values = getSheetData();
+
             List<ValueRange> data2 = new ArrayList<ValueRange>();
             data2.add(new ValueRange()
                     .setRange("A:C")
