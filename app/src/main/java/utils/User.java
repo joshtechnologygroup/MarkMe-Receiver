@@ -21,7 +21,7 @@ public final class User {
             UserEntry.COLUMN_NAME_NAME + " TEXT," +
             UserEntry.COLUMN_NAME_CAR_NUM + " TEXT," +
             UserEntry.COLUMN_NAME_SECRET_CODE + " TEXT," +
-            "UNIQUE " + UserEntry.COLUMN_NAME_EMPLOYEE_ID + " ON CONFLICT REPLACE)";
+            "UNIQUE (" + UserEntry.COLUMN_NAME_EMPLOYEE_ID + ") ON CONFLICT REPLACE)";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME;
 
@@ -42,6 +42,8 @@ public final class User {
         contentValues.put(UserEntry.COLUMN_NAME_NAME, name);
         contentValues.put(UserEntry.COLUMN_NAME_CAR_NUM, car_num);
         contentValues.put(UserEntry.COLUMN_NAME_SECRET_CODE, secret_code);
+        System.out.println(contentValues);
+        System.out.println(employee_id + "," + name + ","  + car_num + ","  + secret_code);
         int row_id = (int) db.insertWithOnConflict(UserEntry.TABLE_NAME, null, contentValues,
                 SQLiteDatabase.CONFLICT_REPLACE);
 //        System.out.println("" + employee_id+", "+row_id);
