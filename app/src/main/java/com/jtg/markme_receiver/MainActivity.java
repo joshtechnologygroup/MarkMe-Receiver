@@ -206,9 +206,9 @@ public class MainActivity extends AppCompatActivity {
         for(ArrayList<String> userAttendnceData: userAttendnces){
             System.out.println(userAttendnceData);
             liveFeedText.append(String.format("%20s %30s %30s\n",
-                    userAttendnceData.get(4),
-                    userAttendnceData.get(2),
-                    userAttendnceData.get(3)));
+                    userAttendnceData.get(0),
+                    userAttendnceData.get(1),
+                    userAttendnceData.get(2)));
         }
     }
 

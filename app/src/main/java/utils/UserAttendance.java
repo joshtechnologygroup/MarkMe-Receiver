@@ -83,11 +83,9 @@ public final class UserAttendance {
 
         while(!res.isAfterLast()){
             ArrayList<String> column_list = new ArrayList<>();
-            column_list.add(res.getString(res.getColumnIndex(UserAttendanceEntry._ID)));
-            column_list.add(res.getString(res.getColumnIndex(UserAttendanceEntry.COLUMN_NAME_USER)));
+            column_list.add(res.getString(res.getColumnIndex(User.UserEntry.COLUMN_NAME_NAME)));
             column_list.add(res.getString(res.getColumnIndex(UserAttendanceEntry.COLUMN_NAME_IN_TIME)));
             column_list.add(res.getString(res.getColumnIndex(UserAttendanceEntry.COLUMN_NAME_OUT_TIME)));
-            column_list.add(res.getString(res.getColumnIndex(User.UserEntry.COLUMN_NAME_NAME)));
             row_list.add(column_list);
             res.moveToNext();
         }
