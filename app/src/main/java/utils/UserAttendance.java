@@ -13,7 +13,7 @@ public final class UserAttendance {
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + UserAttendanceEntry.TABLE_NAME +
             " (" + UserAttendanceEntry._ID + " INTEGER PRIMARY KEY," +
-            UserAttendanceEntry.COLUMN_NAME_USER + " TEXT," +
+            UserAttendanceEntry.COLUMN_NAME_USER + " INTEGER," +
             UserAttendanceEntry.COLUMN_NAME_IN_TIME + " DATETIME," +
             UserAttendanceEntry.COLUMN_NAME_OUT_TIME + " DATETIME," +
             "FOREIGN KEY (" + UserAttendanceEntry.COLUMN_NAME_USER + ") REFERENCES " +
