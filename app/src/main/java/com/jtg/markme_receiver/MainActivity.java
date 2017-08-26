@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -24,6 +25,7 @@ import io.chirp.sdk.model.ChirpProtocolName;
 import io.chirp.sdk.result.ChirpProtocolResult;
 import utils.MarkMeDB;
 import utils.User;
+import utils.UserAttendance;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,24 +52,58 @@ public class MainActivity extends AppCompatActivity {
                     String secretCode = chirpData.substring(0, 6);
                     String entryType = chirpData.substring(6, 8);
                     System.out.println("Heard: " + secretCode + ", type: "+ entryType + "\n");
-                    // Mark entry
                     ArrayList<String> userData = User.getUser(markMeDB.getReadableDatabase(), secretCode);
                     if(!userData.isEmpty()){
                         String inTime = "";
                         String outTime = "";
-                        String timeStamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(
-                                Calendar.getInstance().getTime()
+                        String timeStamp = new SimpleDateFormat("dd MMM HH:mm").format(
+                            Calendar.getInstance().getTime()
                         );
-                        if(entryType == ENTRY_CODE){
+                        System.out.println("- "+ entryType + "  - "+ ENTRY_CODE );
+                        if(entryType.contentEquals(ENTRY_CODE)){
                             inTime = timeStamp;
                         }
                         else {
                             outTime = timeStamp;
-
                         }
-                        System.out.println("Matched User: " + userData.get(0));
-                        liveFeedText.append("- " + userData.get(0));
-                        sendChirp(chirpData);
+                        ArrayList<String> latestUserAttendanceData = UserAttendance.getLatestUserAttendance(
+                            markMeDB.getReadableDatabase(), userData.get(0)
+                        );
+                        if(latestUserAttendanceData.isEmpty()){
+                            if(!inTime.isEmpty()) {
+                                UserAttendance.insertOrUpdateUserAttendance(
+                                        markMeDB.getWritableDatabase(), userData.get(0), inTime, outTime, true
+                                );
+                                System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
+                                updateLiveView();
+                                sendChirp(chirpData);
+                            }
+                        }
+                        else{
+                            String objInTime = latestUserAttendanceData.get(2);
+                            String objOutTime = latestUserAttendanceData.get(2);
+
+                            if(objOutTime.isEmpty()){
+                                if(!outTime.isEmpty()){
+                                    UserAttendance.insertOrUpdateUserAttendance(
+                                            markMeDB.getWritableDatabase(), userData.get(0), inTime, outTime, false
+                                    );
+                                    System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
+                                    updateLiveView();
+                                    sendChirp(chirpData);
+                                }
+                            }
+                            else{
+                                if(!inTime.isEmpty()){
+                                    UserAttendance.insertOrUpdateUserAttendance(
+                                            markMeDB.getWritableDatabase(), userData.get(0), inTime, outTime, true
+                                    );
+                                    System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
+                                    updateLiveView();
+                                    sendChirp(chirpData);
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -103,11 +139,12 @@ public class MainActivity extends AppCompatActivity {
         this.audioManager = (AudioManager) getApplicationContext().getSystemService(
             this.getApplicationContext().AUDIO_SERVICE
         );
+        this.updateLiveView();
 //        this.createFakeUserData(9);
     }
 
     private void createFakeUserData(int n){
-//        User.deleteUsersWithIN(this.markMeDB.getWritableDatabase(), "", new ArrayList<String>());
+        User.deleteUsersWithIN(this.markMeDB.getWritableDatabase(), "", new ArrayList<String>());
         for(int i=1; i <= n; i++)
             User.insertOrUpdateUser(
                 this.markMeDB.getWritableDatabase(), "EMP-"+i, "User-"+i, "HR-26-"+i, "aabb0"+i
@@ -154,6 +191,23 @@ public class MainActivity extends AppCompatActivity {
 //            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, origVolume, 0);
     }
 
+    private void updateLiveView(){
+        String liveFeedHeader = String.format(
+                "%20s %20s %20s\n%60s\n",
+                "Employee", "In-Time", "Out-Time",
+                "----------------------------------------------------------------------------------------------------"
+        );
+        this.liveFeedText.setText(liveFeedHeader);
+        ArrayList<ArrayList<String>> userAttendnces = UserAttendance.getAllUserAttendnces(markMeDB.getReadableDatabase());
+        for(ArrayList<String> userAttendnceData: userAttendnces){
+            System.out.println(userAttendnceData);
+            liveFeedText.append(String.format("%20s %30s %30s\n",
+                    userAttendnceData.get(4),
+                    userAttendnceData.get(2),
+                    userAttendnceData.get(3)));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,9 +216,7 @@ public class MainActivity extends AppCompatActivity {
         this.usersButton = (Button)this.findViewById(R.id.usersButton);
         this.syncPageButton = (Button)this.findViewById(R.id.syncPageButton);
         this.liveFeedText = (TextView) this.findViewById(R.id.liveFeedText);
-//        String liveFeedHeader = String.format("%s %s %s", StringUtils.rightPad());
-        String liveFeedHeader = "";
-        this.liveFeedText.append(liveFeedHeader);
+
         this.liveFeedText.setMovementMethod(new ScrollingMovementMethod());
 
         this.usersButton.setOnClickListener(new View.OnClickListener() {
