@@ -58,6 +58,7 @@ import java.util.Date;
 
 import utils.MarkMeDB;
 import utils.User;
+import utils.UserAttendance;
 
 public class SyncActivity extends AppCompatActivity
         implements EasyPermissions.PermissionCallbacks {
@@ -150,8 +151,6 @@ public class SyncActivity extends AppCompatActivity
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
     }
-
-
 
     /**
      * Attempt to call the API, after verifying that all the preconditions are
@@ -420,24 +419,17 @@ public class SyncActivity extends AppCompatActivity
             }
         }
 
-        private List<Sheet> getAttendanceSheets() throws IOException {
-            if (spreadSheetData == null) {
-                spreadSheetData = this.mService.spreadsheets().get(ATTENDANCE_SHEET_ID).execute();
-            }
-            return spreadSheetData.getSheets();
-        }
-
         private List<List<Object>> getSheetData() {
 
             List<List<String>> actualData;
 
             actualData = Arrays.asList(
-                    Arrays.asList("S.NO", "NAME", "IN_TIME", "OUT_TIME"),
-                    Arrays.asList("1", "Prakash", "09:50", "20:30"),
-                    Arrays.asList("2", "Ishu", "09:30", "20:30"),
-                    Arrays.asList("3", "Saurabh", "10:30", "20:30"),
-                    Arrays.asList("4", "Rajat", "11:00", "20:30"),
-                    Arrays.asList("5", "Tarun", "09:00", "20:30")
+                    Arrays.asList("NAME", "IN_TIME", "OUT_TIME"),
+                    Arrays.asList("Prakash", "09:50", "20:30"),
+                    Arrays.asList("Ishu", "09:30", "20:30"),
+                    Arrays.asList("Saurabh", "10:30", "20:30"),
+                    Arrays.asList("Rajat", "11:00", "20:30"),
+                    Arrays.asList("Tarun", "09:00", "20:30")
             );
 
             List<List<Object>> data = new ArrayList<List<Object>>();
@@ -452,179 +444,6 @@ public class SyncActivity extends AppCompatActivity
             return data;
         }
 
-        private List<RowData> getSheetRowData() {
-
-            List<List<String>> actualData;
-
-            actualData = Arrays.asList(
-                    Arrays.asList("S.NO", "NAME", "IN_TIME", "OUT_TIME"),
-                    Arrays.asList("1", "Prakash", "09:50", "20:30"),
-                    Arrays.asList("2", "Ishu", "09:30", "20:30"),
-                    Arrays.asList("3", "Saurabh", "10:30", "20:30"),
-                    Arrays.asList("4", "Rajat", "11:00", "20:30")
-            );
-
-            List<RowData> rowData = new ArrayList<RowData>();
-
-            for (int i=0; i < actualData.size(); i++) {
-                List<CellData> cells = new ArrayList<CellData>();
-                for (int j=0; j < actualData.get(i).size(); j++) {
-                    CellData c = new CellData();
-                    c.setFormattedValue(actualData.get(i).get(j));
-                    cells.add(c);
-                }
-                RowData row = new RowData();
-                row.setValues(cells);
-                rowData.add(row);
-            }
-            return rowData;
-        }
-
-        private AddSheetRequest addNewSheet() {
-            AddSheetRequest sheetRequest = new AddSheetRequest();
-            SheetProperties sheetProperties = new SheetProperties();
-            String todayDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            sheetProperties.setTitle(todayDate);
-            sheetRequest.setProperties(sheetProperties);
-
-            return sheetRequest;
-        }
-
-        private Sheet createNewSheet(String title) throws IOException {
-            Sheet sheet=null;
-
-            List<Request> requests = new ArrayList<>();
-//            Request request = new Request();
-//
-//            AddSheetRequest sheetRequest = new AddSheetRequest();
-//            SheetProperties sheetProperties = new SheetProperties();
-//            sheetProperties.setTitle(title);
-//            sheetRequest.setProperties(sheetProperties);
-//
-//            request.setAddSheet(sheetRequest);
-//            requests.add(request);
-//
-//            Request request2 = new Request();
-//
-//            UpdateCellsRequest cellsRequest = new UpdateCellsRequest();
-//            cellsRequest.setFields("sno.name.intime.outtime");
-//            cellsRequest.setRows(getSheetRowData());
-//            GridRange range = new GridRange();
-//            range.setStartColumnIndex(0);
-//            range.setStartRowIndex(1);
-//            cellsRequest.setRange(range);
-//            request2.setUpdateCells(cellsRequest);
-//            requests.add(request2);
-
-            System.out.println("//////////////////////////////////");
-
-            requests.add(new Request().setAddSheet(new AddSheetRequest()
-                    .setProperties(new SheetProperties()
-                            .setTitle(title)))
-            );
-
-//            requests.add(new Request()
-//                    .setUpdateCells(new UpdateCellsRequest()
-//                            .setRange(new GridRange()
-//                                    .setSheetId(0)
-//                                    .setStartColumnIndex(0))
-//                            .setRows(getSheetRowData())
-//                            .setFields("userEnteredValue,userEnteredFormat.backgroundColor"))
-//            );
-
-            System.out.println("???????????????????????????????????");
-
-
-
-            BatchUpdateSpreadsheetRequest batchUpdateBody = new BatchUpdateSpreadsheetRequest();
-            batchUpdateBody.setRequests(requests);
-
-            BatchUpdateSpreadsheetResponse batchUpdateResponse =
-                    this.mService.spreadsheets().batchUpdate(ATTENDANCE_SHEET_ID, batchUpdateBody).execute();
-
-            System.out.println("new sheet response --------");
-            System.out.println(batchUpdateResponse);
-
-            // Refresh list
-            spreadSheetData = null;
-            List<Sheet> attendanceSheets = getAttendanceSheets();
-
-            for (int i = 0; i < attendanceSheets.size(); i ++) {
-                System.out.println(attendanceSheets.get(i).getProperties().getTitle());
-                if (attendanceSheets.get(i).getProperties().getTitle().equals(title)) {
-                    sheet = attendanceSheets.get(i);
-                    break;
-                }
-            }
-
-            return sheet;
-        }
-
-        private Sheet getOrCreateSheet(String date) {
-            Sheet sheet=null;
-
-            List<Sheet> attendanceSheets;
-
-            try {
-                attendanceSheets = getAttendanceSheets();
-
-                for (int i = 0; i < attendanceSheets.size(); i ++) {
-                    System.out.println(attendanceSheets.get(i).getProperties().getTitle());
-                    if (attendanceSheets.get(i).getProperties().getTitle().equals(date)) {
-                        sheet = attendanceSheets.get(i);
-                        break;
-                    }
-                }
-            }
-            catch (IOException e) {
-                System.out.println(e);
-            }
-
-            if (sheet == null) {
-                try {
-                    sheet = createNewSheet(date);
-                }
-                catch (IOException e) {
-                    System.out.println(e);
-                }
-            }
-
-            return sheet;
-        }
-
-        private List<GridData> getSheetGridData() {
-
-            List<List<String>> actualData;
-
-            actualData = Arrays.asList(
-                    Arrays.asList("S.NO", "NAME", "IN_TIME", "OUT_TIME"),
-                    Arrays.asList("1", "Prakash", "09:50", "20:30"),
-                    Arrays.asList("2", "Ishu", "09:30", "20:30"),
-                    Arrays.asList("3", "Saurabh", "10:30", "20:30"),
-                    Arrays.asList("4", "Rajat", "11:00", "20:30")
-            );
-
-            List<GridData> data = new ArrayList<GridData>();
-            List<RowData> rowData = new ArrayList<RowData>();
-
-            for (int i=0; i < actualData.size(); i++) {
-                List<CellData> cells = new ArrayList<CellData>();
-                for (int j=0; j < actualData.get(i).size(); j++) {
-                    CellData c = new CellData();
-                    c.setFormattedValue(actualData.get(i).get(j));
-                    cells.add(c);
-                }
-                RowData row = new RowData();
-                row.setValues(cells);
-                rowData.add(row);
-            }
-            GridData grid = new GridData();
-            grid.setRowData(rowData);
-            data.add(grid);
-            return data;
-        }
-
-
         private List<String> createSheet() throws IOException, GeneralSecurityException {
             Spreadsheet requestBody = new Spreadsheet();
             SpreadsheetProperties properties = new SpreadsheetProperties();
@@ -637,19 +456,15 @@ public class SyncActivity extends AppCompatActivity
             List<List<Object>> values = getSheetData();
             List<ValueRange> data2 = new ArrayList<ValueRange>();
             data2.add(new ValueRange()
-                    .setRange("A:D")
+                    .setRange("A:C")
                     .setValues(values));
             BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
                     .setValueInputOption("RAW")
                     .setData(data2);
             BatchUpdateValuesResponse result = this.mService.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
             System.out.println(result);
-
-            // UPTO HERE TO ADD ROWS
             return results;
         }
-
-
 
         @Override
         protected void onPreExecute() {
@@ -697,7 +512,6 @@ public class SyncActivity extends AppCompatActivity
     private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
         private com.google.api.services.sheets.v4.Sheets mService = null;
         private Exception mLastError = null;
-        private Spreadsheet spreadSheetData;
         private static final String ATTENDANCE_SHEET_ID = "1phyV8zz8OOHgXY_BmWgTqDe3r2umtsEdtGf436FcbsA";
 
         MakeRequestTask(GoogleAccountCredential credential) {
@@ -725,12 +539,6 @@ public class SyncActivity extends AppCompatActivity
             }
         }
 
-        private List<Sheet> getAttendanceSheets() throws IOException {
-            if (spreadSheetData == null) {
-                Spreadsheet spreadSheetData = this.mService.spreadsheets().get(ATTENDANCE_SHEET_ID).execute();
-            }
-            return spreadSheetData.getSheets();
-        }
 
         /**
          * Fetch a list of names and majors of students in a sample spreadsheet:
@@ -739,14 +547,9 @@ public class SyncActivity extends AppCompatActivity
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
-//            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
             String spreadsheetId = "1dY0PCJCvf9JyFuEwfl175AFRJAsvK0sFo5OLoKQ6Hlw";
             String range = "A:F";
             List<String> results = new ArrayList<String>();
-            if (spreadSheetData == null) {
-                Spreadsheet ssRes = this.mService.spreadsheets().get(spreadsheetId).execute();
-                System.out.println(ssRes);
-            }
 
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
@@ -754,12 +557,15 @@ public class SyncActivity extends AppCompatActivity
             List<List<Object>> values = response.getValues();
             if (values != null) {
                 results.add("EMP ID, NAME, CAR_NUM, SECRET");
+                values.remove(0);   // Remove first entry of headers
                 for (List row : values) {
-                    results.add(row.get(0) + "|" + row.get(1) + "|" + row.get(2) +  "|" + row.get(2));
-                    User.insertOrUpdateUser(
-                        markMeDB.getWritableDatabase(),
-                            row.get(0).toString(), row.get(1).toString(), row.get(2).toString(), row.get(3).toString()
-                    );
+                    if (row.size() == 4 && !row.get(3).toString().isEmpty()) {
+                        results.add(row.get(0) + "|" + row.get(1) + "|" + row.get(2) +  "|" + row.get(3));
+                        User.insertOrUpdateUser(
+                                markMeDB.getWritableDatabase(),
+                                row.get(0).toString(), row.get(1).toString(), row.get(2).toString(), row.get(3).toString()
+                        );
+                    }
                 }
             }
             System.out.println(response);
