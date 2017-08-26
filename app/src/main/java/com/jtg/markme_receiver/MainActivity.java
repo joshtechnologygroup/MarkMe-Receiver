@@ -53,20 +53,23 @@ public class MainActivity extends AppCompatActivity {
                     // Mark entry
                     ArrayList<String> userData = User.getUser(markMeDB.getReadableDatabase(), secretCode);
                     if(!userData.isEmpty()){
-                        String inTime = "";
-                        String outTime = "";
-                        String timeStamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(
-                                Calendar.getInstance().getTime()
+                        String inTime = "-";
+                        String outTime = "-";
+                        String timeStamp = new SimpleDateFormat("dd MMM HH:mm").format(
+                            Calendar.getInstance().getTime()
                         );
-                        if(entryType == ENTRY_CODE){
+                        System.out.println("- "+ entryType + "  - "+ ENTRY_CODE );
+                        if(entryType.contentEquals(ENTRY_CODE)){
+                            System.out.println("in if");
                             inTime = timeStamp;
                         }
                         else {
+                            System.out.println("in else");
                             outTime = timeStamp;
 
                         }
-                        System.out.println("Matched User: " + userData.get(0));
-                        liveFeedText.append("- " + userData.get(0));
+                        System.out.println(String.format("%20s %30s %30s\n", userData.get(0), inTime, outTime));
+                        liveFeedText.append(String.format("%20s %30s %30s\n", userData.get(0), inTime, outTime));
                         sendChirp(chirpData);
                     }
                 }
@@ -162,8 +165,11 @@ public class MainActivity extends AppCompatActivity {
         this.usersButton = (Button)this.findViewById(R.id.usersButton);
         this.syncPageButton = (Button)this.findViewById(R.id.syncPageButton);
         this.liveFeedText = (TextView) this.findViewById(R.id.liveFeedText);
-//        String liveFeedHeader = String.format("%s %s %s", StringUtils.rightPad());
-        String liveFeedHeader = "";
+        String liveFeedHeader = String.format(
+                "%20s %20s %20s\n%60s\n",
+                "Employee", "In-Time", "Out-Time",
+                "----------------------------------------------------------------------------------------------------"
+        );
         this.liveFeedText.append(liveFeedHeader);
         this.liveFeedText.setMovementMethod(new ScrollingMovementMethod());
 
