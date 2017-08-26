@@ -6,10 +6,14 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import io.chirp.sdk.ChirpSDK;
 import io.chirp.sdk.ChirpSDKListener;
@@ -26,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private ChirpSDK chirpSDK;
     private AudioManager audioManager;
     private MarkMeDB markMeDB;
-    private Button usersButton;
+    private Button usersButton, syncPageButton;
+    private TextView liveFeedText;
 
     public final String ENTRY_CODE = "01";
     public final String EXIT_CODE = "02";
@@ -48,7 +53,20 @@ public class MainActivity extends AppCompatActivity {
                     // Mark entry
                     ArrayList<String> userData = User.getUser(markMeDB.getReadableDatabase(), secretCode);
                     if(!userData.isEmpty()){
+                        String inTime = "";
+                        String outTime = "";
+                        String timeStamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(
+                                Calendar.getInstance().getTime()
+                        );
+                        if(entryType == ENTRY_CODE){
+                            inTime = timeStamp;
+                        }
+                        else {
+                            outTime = timeStamp;
+
+                        }
                         System.out.println("Matched User: " + userData.get(0));
+                        liveFeedText.append("- " + userData.get(0));
                         sendChirp(chirpData);
                     }
                 }
@@ -142,12 +160,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.usersButton = (Button)this.findViewById(R.id.usersButton);
+        this.syncPageButton = (Button)this.findViewById(R.id.syncPageButton);
+        this.liveFeedText = (TextView) this.findViewById(R.id.liveFeedText);
+//        String liveFeedHeader = String.format("%s %s %s", StringUtils.rightPad());
+        String liveFeedHeader = "";
+        this.liveFeedText.append(liveFeedHeader);
+        this.liveFeedText.setMovementMethod(new ScrollingMovementMethod());
 
         this.usersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent secretCodePage = new Intent(MainActivity.this, UserListActivity.class);
-                startActivity(secretCodePage);
+                Intent usersPage = new Intent(MainActivity.this, UserListActivity.class);
+                startActivity(usersPage);
+            }
+        });
+
+        this.syncPageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent syncPage = new Intent(MainActivity.this, SyncActivity.class);
+                startActivity(syncPage);
             }
         });
 
