@@ -96,12 +96,22 @@ public class MainActivity extends AppCompatActivity {
                                     updateLiveView();
                                     sendChirp(chirpData);
                                 }
+                                else {
+                                    System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
+                                    updateLiveView();
+                                    sendChirp(chirpData);
+                                }
                             }
                             else{
                                 if(!inTime.isEmpty()){
                                     UserAttendance.insertOrUpdateUserAttendance(
                                             markMeDB.getWritableDatabase(), userData.get(0), inTime, outTime, true
                                     );
+                                    System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
+                                    updateLiveView();
+                                    sendChirp(chirpData);
+                                }
+                                else{
                                     System.out.println(String.format("%20s %30s %30s\n", userData.get(1), inTime, outTime));
                                     updateLiveView();
                                     sendChirp(chirpData);
@@ -205,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<ArrayList<String>> userAttendnces = UserAttendance.getAllUserAttendnces(markMeDB.getReadableDatabase());
         for(ArrayList<String> userAttendnceData: userAttendnces){
             System.out.println(userAttendnceData);
-            liveFeedText.append(String.format("%20s %30s %30s\n",
+            liveFeedText.append(String.format("%20s %20s %20s\n",
                     userAttendnceData.get(0),
                     userAttendnceData.get(1),
                     userAttendnceData.get(2)));
